@@ -24,6 +24,7 @@ public class FlagsHListener implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onPlace(@Nonnull BlockPlaceEvent event) {
         if (isPlayerForbidenToInteract(event.getPlayer(), event.getBlockPlaced().getLocation())) {
+            event.setCancelled(true);
             return;
         }
         if (FlagsH.ALL_WALL_BANNERS.contains(event.getBlock().getType())) {
@@ -71,6 +72,7 @@ public class FlagsHListener implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onInteractWithFlagEntity(@Nonnull PlayerInteractEntityEvent event) {
         if (isPlayerForbidenToInteract(event.getPlayer(), event.getRightClicked().getLocation())) {
+            event.setCancelled(true);
             return;
         }
         // if player click with a banner on hand on a flag : extend the flag
@@ -91,13 +93,19 @@ public class FlagsHListener implements Listener {
      */
     @EventHandler(ignoreCancelled = true)
     public void onHitFlagEntity(@Nonnull EntityDamageByEntityEvent event) {
-        if (event.getDamager() instanceof Player p && isPlayerForbidenToInteract(p, event.getEntity().getLocation())) {
-            return;
-        }
-        Flag flag = FlagsH.getFlagLinkedToEntity(event.getEntity());
-        if (flag != null) {
-            flag.remove();
-            event.setCancelled(true);
+        if (event.getDamager() instanceof Player player) {
+            Location location = event.getEntity().getLocation();
+
+            if (isPlayerForbidenToInteract(player, location)) {
+                event.setCancelled(true); // Cancel the event if the player is forbidden to interact
+                return;
+            }
+
+            Flag flag = FlagsH.getFlagLinkedToEntity(event.getEntity());
+            if (flag != null) {
+                flag.remove();
+                event.setCancelled(true);
+            }
         }
     }
 
